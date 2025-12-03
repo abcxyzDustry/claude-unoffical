@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Unofficial GUI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #1a1a1a; color: white; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 30px; padding: 20px; background: #2d2d2d; border-radius: 10px; }
+        h1 { color: #10a37f; }
+        .status { background: #333; padding: 10px; border-radius: 5px; margin: 10px 0; }
+        .online { color: #10a37f; }
+        .offline { color: #ff6b6b; }
+        .main-content { display: flex; gap: 20px; margin-bottom: 20px; }
+        .sidebar { width: 300px; background: #2d2d2d; padding: 20px; border-radius: 10px; }
+        .chat-area { flex: 1; background: #2d2d2d; border-radius: 10px; padding: 20px; }
+        .conversation-list { margin-top: 10px; }
+        .conv-item { padding: 10px; background: #3d3d3d; margin: 5px 0; border-radius: 5px; cursor: pointer; }
+        .conv-item:hover { background: #4d4d4d; }
+        .conv-item.active { background: #10a37f; }
+        textarea, input { width: 100%; padding: 12px; background: #3d3d3d; border: 1px solid #555; border-radius: 5px; color: white; margin: 10px 0; }
+        button { background: #10a37f; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0d8c6d; }
+        button:disabled { background: #555; cursor: not-allowed; }
+        .chat-messages { height: 400px; overflow-y: auto; background: #1a1a1a; padding: 15px; border-radius: 5px; margin-bottom: 15px; }
+        .message { margin: 10px 0; padding: 10px; border-radius: 8px; max-width: 80%; }
+        .user-message { background: #10a37f; margin-left: auto; }
+        .claude-message { background: #3d3d3d; }
+        .file-upload { margin: 15px 0; }
+        .controls { display: flex; gap: 10px; margin-top: 15px; }
+        .error { color: #ff6b6b; background: #3d2d2d; padding: 10px; border-radius: 5px; margin: 10px 0; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔮 Claude Unofficial GUI</h1>
+            <div class="status">
+                Trạng thái: <span id="statusText" class="offline">Đang kết nối...</span>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <h3>🔧 Cài đặt Cookie</h3>
+                <input type="password" id="cookieInput" placeholder="Dán Claude cookie tại đây">
+                <button onclick="saveCookie()">Lưu Cookie</button>
+                <button onclick="clearAll()" style="background: #ff6b6b; margin-top: 5px;">Xóa hết</button>
+                
+                <h3 style="margin-top: 30px;">💬 Cuộc hội thoại</h3>
+                <button onclick="newChat()">Tạo chat mới</button>
+                <div class="conversation-list" id="conversationList">
+                    <!-- Danh sách chat sẽ hiện ở đây -->
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <h3>📁 Tải file lên</h3>
+                    <input type="file" id="fileUpload" class="file-upload">
+                    <button onclick="uploadFile()">Tải lên</button>
+                    <div id="uploadStatus"></div>
+                </div>
+            </div>
+            
+            <div class="chat-area">
+                <h3>💭 Chat với Claude</h3>
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Tin nhắn sẽ hiện ở đây -->
+                </div>
+                
+                <div class="error" id="errorBox"></div>
+                
+                <textarea id="messageInput" placeholder="Nhập tin nhắn của bạn..." rows="4"></textarea>
+                
+                <div class="controls">
+                    <button onclick="sendMessage()" id="sendBtn">Gửi tin nhắn</button>
+                    <button onclick="deleteCurrentChat()" style="background: #ff6b6b;">Xóa chat này</button>
+                    <button onclick="renameChat()" style="background: #f39c12;">Đổi tên chat</button>
+                </div>
+                
+                <div style="margin-top: 20px; font-size: 12px; color: #888;">
+                    <strong>Lưu ý:</strong> Cookie được lưu chỉ trên trình duyệt của bạn. API unofficial này có thể ngừng hoạt động bất kỳ lúc nào.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
