@@ -3,89 +3,844 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Claude Unofficial GUI</title>
+    <title>Mindustry Clone - Mini Version</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: #1a1a1a; color: white; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        header { text-align: center; margin-bottom: 30px; padding: 20px; background: #2d2d2d; border-radius: 10px; }
-        h1 { color: #10a37f; }
-        .status { background: #333; padding: 10px; border-radius: 5px; margin: 10px 0; }
-        .online { color: #10a37f; }
-        .offline { color: #ff6b6b; }
-        .main-content { display: flex; gap: 20px; margin-bottom: 20px; }
-        .sidebar { width: 300px; background: #2d2d2d; padding: 20px; border-radius: 10px; }
-        .chat-area { flex: 1; background: #2d2d2d; border-radius: 10px; padding: 20px; }
-        .conversation-list { margin-top: 10px; }
-        .conv-item { padding: 10px; background: #3d3d3d; margin: 5px 0; border-radius: 5px; cursor: pointer; }
-        .conv-item:hover { background: #4d4d4d; }
-        .conv-item.active { background: #10a37f; }
-        textarea, input { width: 100%; padding: 12px; background: #3d3d3d; border: 1px solid #555; border-radius: 5px; color: white; margin: 10px 0; }
-        button { background: #10a37f; color: white; border: none; padding: 12px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        button:hover { background: #0d8c6d; }
-        button:disabled { background: #555; cursor: not-allowed; }
-        .chat-messages { height: 400px; overflow-y: auto; background: #1a1a1a; padding: 15px; border-radius: 5px; margin-bottom: 15px; }
-        .message { margin: 10px 0; padding: 10px; border-radius: 8px; max-width: 80%; }
-        .user-message { background: #10a37f; margin-left: auto; }
-        .claude-message { background: #3d3d3d; }
-        .file-upload { margin: 15px 0; }
-        .controls { display: flex; gap: 10px; margin-top: 15px; }
-        .error { color: #ff6b6b; background: #3d2d2d; padding: 10px; border-radius: 5px; margin: 10px 0; display: none; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        #gameContainer {
+            display: flex;
+            height: 100vh;
+            padding: 10px;
+            gap: 10px;
+        }
+        
+        #gameCanvas {
+            flex: 1;
+            background-color: #0d1117;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+        
+        #sidebar {
+            width: 300px;
+            background-color: rgba(25, 25, 35, 0.9);
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+        }
+        
+        .resource {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+        
+        .resource-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .resource-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+        
+        .building-list {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .building-item {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        
+        .building-item:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .building-item.selected {
+            border-color: #4CAF50;
+            background-color: rgba(76, 175, 80, 0.2);
+        }
+        
+        .building-icon {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 5px;
+            border-radius: 4px;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        #selectedInfo {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        
+        #gridOverlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            pointer-events: none;
+        }
+        
+        #messageLog {
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 12px;
+            max-height: 100px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .title {
+            color: #4CAF50;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+        
+        .section {
+            margin-bottom: 15px;
+        }
+        
+        .copper { background-color: #b87333; }
+        .lead { background-color: #808080; }
+        .coal { background-color: #333333; }
+        .titanium { background-color: #4169e1; }
+        .thorium { background-color: #9400d3; }
+        
+        .drill { background: linear-gradient(45deg, #666, #333); }
+        .conveyor { background: linear-gradient(45deg, #444, #222); }
+        .router { background: linear-gradient(45deg, #555, #333); }
+        .generator { background: linear-gradient(45deg, #ff6b6b, #c44569); }
+        .turret { background: linear-gradient(45deg, #4ecdc4, #44a08d); }
+        
+        #gridSize {
+            width: 100%;
+            margin: 10px 0;
+        }
+        
+        .grid-cell {
+            position: absolute;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            pointer-events: none;
+        }
+        
+        .building {
+            position: absolute;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .building:hover {
+            transform: scale(1.05);
+            z-index: 10;
+        }
+        
+        .resource-node {
+            position: absolute;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.3); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🔮 Claude Unofficial GUI</h1>
-            <div class="status">
-                Trạng thái: <span id="statusText" class="offline">Đang kết nối...</span>
-            </div>
-        </header>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="1200" height="800"></canvas>
         
-        <div class="main-content">
-            <div class="sidebar">
-                <h3>🔧 Cài đặt Cookie</h3>
-                <input type="password" id="cookieInput" placeholder="Dán Claude cookie tại đây">
-                <button onclick="saveCookie()">Lưu Cookie</button>
-                <button onclick="clearAll()" style="background: #ff6b6b; margin-top: 5px;">Xóa hết</button>
-                
-                <h3 style="margin-top: 30px;">💬 Cuộc hội thoại</h3>
-                <button onclick="newChat()">Tạo chat mới</button>
-                <div class="conversation-list" id="conversationList">
-                    <!-- Danh sách chat sẽ hiện ở đây -->
-                </div>
-                
-                <div style="margin-top: 30px;">
-                    <h3>📁 Tải file lên</h3>
-                    <input type="file" id="fileUpload" class="file-upload">
-                    <button onclick="uploadFile()">Tải lên</button>
-                    <div id="uploadStatus"></div>
-                </div>
+        <div id="sidebar">
+            <div class="section">
+                <div class="title">📊 Tài Nguyên</div>
+                <div id="resources"></div>
             </div>
             
-            <div class="chat-area">
-                <h3>💭 Chat với Claude</h3>
-                <div class="chat-messages" id="chatMessages">
-                    <!-- Tin nhắn sẽ hiện ở đây -->
+            <div class="section">
+                <div class="title">🏗️ Xây Dựng</div>
+                <div class="building-list" id="buildingList"></div>
+                
+                <div id="selectedInfo" style="display: none;">
+                    <div id="selectedName"></div>
+                    <div id="selectedCost"></div>
+                    <div id="selectedDescription"></div>
                 </div>
                 
-                <div class="error" id="errorBox"></div>
-                
-                <textarea id="messageInput" placeholder="Nhập tin nhắn của bạn..." rows="4"></textarea>
-                
-                <div class="controls">
-                    <button onclick="sendMessage()" id="sendBtn">Gửi tin nhắn</button>
-                    <button onclick="deleteCurrentChat()" style="background: #ff6b6b;">Xóa chat này</button>
-                    <button onclick="renameChat()" style="background: #f39c12;">Đổi tên chat</button>
+                <div style="margin-top: 10px;">
+                    <label>Kích thước lưới: <span id="gridSizeValue">64</span>px</label>
+                    <input type="range" id="gridSize" min="32" max="128" step="32" value="64">
                 </div>
                 
-                <div style="margin-top: 20px; font-size: 12px; color: #888;">
-                    <strong>Lưu ý:</strong> Cookie được lưu chỉ trên trình duyệt của bạn. API unofficial này có thể ngừng hoạt động bất kỳ lúc nào.
+                <button id="clearBtn" style="margin-top: 10px; background-color: #f44336;">Xóa Tất Cả</button>
+            </div>
+            
+            <div class="section">
+                <div class="title">📝 Thông Tin</div>
+                <div id="messageLog"></div>
+            </div>
+            
+            <div class="section">
+                <div class="title">🎮 Điều Khiển</div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="startWave">Bắt Đợt Tấn Công</button>
+                    <button id="pauseBtn">Tạm Dừng</button>
+                </div>
+                <div style="margin-top: 10px; font-size: 14px;">
+                    <div>Wave: <span id="waveCount">1</span></div>
+                    <div>Enemies: <span id="enemyCount">0</span></div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <div id="gridOverlay"></div>
 
-    <script src="app.js"></script>
+    <script>
+        class MindustryClone {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.gridSize = 64;
+                this.selectedBuilding = null;
+                this.buildings = [];
+                this.resources = [];
+                this.enemies = [];
+                this.projectiles = [];
+                this.resourceCounts = {
+                    copper: 100,
+                    lead: 100,
+                    coal: 50,
+                    titanium: 25,
+                    thorium: 10
+                };
+                
+                this.buildingTypes = {
+                    drill: {
+                        name: "Máy Khoan",
+                        cost: { copper: 15, lead: 10 },
+                        color: "#b87333",
+                        icon: "drill",
+                        produces: "copper",
+                        rate: 0.5,
+                        size: 1
+                    },
+                    conveyor: {
+                        name: "Băng Chuyền",
+                        cost: { copper: 5, lead: 3 },
+                        color: "#808080",
+                        icon: "conveyor",
+                        size: 1,
+                        speed: 2
+                    },
+                    router: {
+                        name: "Bộ Định Tuyến",
+                        cost: { copper: 8, lead: 6 },
+                        color: "#4CAF50",
+                        icon: "router",
+                        size: 1
+                    },
+                    generator: {
+                        name: "Máy Phát Điện",
+                        cost: { copper: 20, lead: 15, coal: 10 },
+                        color: "#ff6b6b",
+                        icon: "generator",
+                        power: 10,
+                        size: 2
+                    },
+                    turret: {
+                        name: "Tháp Súng",
+                        cost: { copper: 25, lead: 20, titanium: 10 },
+                        color: "#4ecdc4",
+                        icon: "turret",
+                        range: 150,
+                        damage: 5,
+                        size: 2
+                    }
+                };
+                
+                this.resourceTypes = {
+                    copper: { color: "#b87333", value: 1 },
+                    lead: { color: "#808080", value: 1 },
+                    coal: { color: "#333333", value: 2 },
+                    titanium: { color: "#4169e1", value: 3 },
+                    thorium: { color: "#9400d3", value: 5 }
+                };
+                
+                this.wave = 1;
+                this.paused = false;
+                this.lastTime = 0;
+                this.gameTime = 0;
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupEventListeners();
+                this.createResourceNodes();
+                this.renderUI();
+                this.animate();
+            }
+            
+            setupEventListeners() {
+                // Canvas click for building placement
+                this.canvas.addEventListener('click', (e) => {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    const gridX = Math.floor(x / this.gridSize) * this.gridSize;
+                    const gridY = Math.floor(y / this.gridSize) * this.gridSize;
+                    
+                    if (this.selectedBuilding) {
+                        this.placeBuilding(gridX, gridY);
+                    } else {
+                        this.selectBuildingAt(gridX, gridY);
+                    }
+                });
+                
+                // Canvas hover for building preview
+                this.canvas.addEventListener('mousemove', (e) => {
+                    this.mouseX = e.offsetX;
+                    this.mouseY = e.offsetY;
+                });
+                
+                // Grid size slider
+                document.getElementById('gridSize').addEventListener('input', (e) => {
+                    this.gridSize = parseInt(e.target.value);
+                    document.getElementById('gridSizeValue').textContent = this.gridSize;
+                    this.renderGrid();
+                });
+                
+                // Clear button
+                document.getElementById('clearBtn').addEventListener('click', () => {
+                    if (confirm("Xóa tất cả công trình?")) {
+                        this.buildings = [];
+                        this.addMessage("Đã xóa tất cả công trình!");
+                    }
+                });
+                
+                // Start wave button
+                document.getElementById('startWave').addEventListener('click', () => {
+                    this.spawnEnemyWave();
+                });
+                
+                // Pause button
+                document.getElementById('pauseBtn').addEventListener('click', () => {
+                    this.paused = !this.paused;
+                    document.getElementById('pauseBtn').textContent = 
+                        this.paused ? "Tiếp Tục" : "Tạm Dừng";
+                });
+            }
+            
+            createResourceNodes() {
+                // Create some random resource nodes
+                for (let i = 0; i < 8; i++) {
+                    const types = Object.keys(this.resourceTypes);
+                    const type = types[Math.floor(Math.random() * types.length)];
+                    const x = Math.floor(Math.random() * 15) * this.gridSize + this.gridSize/2;
+                    const y = Math.floor(Math.random() * 10) * this.gridSize + this.gridSize/2;
+                    
+                    this.resources.push({
+                        x, y,
+                        type: type,
+                        amount: 100 + Math.random() * 200
+                    });
+                }
+            }
+            
+            renderUI() {
+                // Render resource display
+                const resourcesDiv = document.getElementById('resources');
+                resourcesDiv.innerHTML = '';
+                
+                for (const [resource, amount] of Object.entries(this.resourceCounts)) {
+                    const div = document.createElement('div');
+                    div.className = 'resource';
+                    div.innerHTML = `
+                        <div class="resource-name">
+                            <div class="resource-icon ${resource}"></div>
+                            <span>${this.capitalize(resource)}</span>
+                        </div>
+                        <span>${Math.floor(amount)}</span>
+                    `;
+                    resourcesDiv.appendChild(div);
+                }
+                
+                // Render building list
+                const buildingList = document.getElementById('buildingList');
+                buildingList.innerHTML = '';
+                
+                for (const [id, building] of Object.entries(this.buildingTypes)) {
+                    const div = document.createElement('div');
+                    div.className = 'building-item';
+                    div.dataset.building = id;
+                    div.innerHTML = `
+                        <div class="building-icon ${building.icon}"></div>
+                        <div>${building.name}</div>
+                    `;
+                    
+                    div.addEventListener('click', () => {
+                        this.selectBuildingType(id);
+                        document.querySelectorAll('.building-item').forEach(item => {
+                            item.classList.remove('selected');
+                        });
+                        div.classList.add('selected');
+                    });
+                    
+                    buildingList.appendChild(div);
+                }
+                
+                this.renderGrid();
+            }
+            
+            renderGrid() {
+                const overlay = document.getElementById('gridOverlay');
+                overlay.innerHTML = '';
+                overlay.style.width = this.canvas.width + 'px';
+                overlay.style.height = this.canvas.height + 'px';
+                
+                // Draw grid lines
+                for (let x = 0; x < this.canvas.width; x += this.gridSize) {
+                    for (let y = 0; y < this.canvas.height; y += this.gridSize) {
+                        const cell = document.createElement('div');
+                        cell.className = 'grid-cell';
+                        cell.style.left = x + 'px';
+                        cell.style.top = y + 'px';
+                        cell.style.width = this.gridSize + 'px';
+                        cell.style.height = this.gridSize + 'px';
+                        overlay.appendChild(cell);
+                    }
+                }
+            }
+            
+            selectBuildingType(type) {
+                this.selectedBuilding = type;
+                const building = this.buildingTypes[type];
+                
+                document.getElementById('selectedInfo').style.display = 'block';
+                document.getElementById('selectedName').textContent = building.name;
+                
+                let costText = "Chi phí: ";
+                for (const [resource, amount] of Object.entries(building.cost)) {
+                    costText += `${this.capitalize(resource)}: ${amount} `;
+                }
+                document.getElementById('selectedCost').textContent = costText;
+                
+                let desc = "";
+                if (building.produces) desc += `Sản xuất: ${this.capitalize(building.produces)}\n`;
+                if (building.power) desc += `Công suất: ${building.power}MW\n`;
+                if (building.range) desc += `Tầm bắn: ${building.range}px\n`;
+                document.getElementById('selectedDescription').textContent = desc;
+            }
+            
+            placeBuilding(gridX, gridY) {
+                const buildingType = this.buildingTypes[this.selectedBuilding];
+                
+                // Check if can afford
+                for (const [resource, cost] of Object.entries(buildingType.cost)) {
+                    if (this.resourceCounts[resource] < cost) {
+                        this.addMessage(`Không đủ ${this.capitalize(resource)}!`);
+                        return;
+                    }
+                }
+                
+                // Check if space is available
+                const size = buildingType.size * this.gridSize;
+                for (const building of this.buildings) {
+                    if (Math.abs(building.x - gridX) < size && Math.abs(building.y - gridY) < size) {
+                        this.addMessage("Không đủ không gian!");
+                        return;
+                    }
+                }
+                
+                // Deduct costs
+                for (const [resource, cost] of Object.entries(buildingType.cost)) {
+                    this.resourceCounts[resource] -= cost;
+                }
+                
+                // Add building
+                this.buildings.push({
+                    x: gridX,
+                    y: gridY,
+                    type: this.selectedBuilding,
+                    size: size,
+                    progress: 0,
+                    health: 100
+                });
+                
+                this.addMessage(`Đã xây ${buildingType.name}!`);
+                this.renderUI();
+            }
+            
+            selectBuildingAt(x, y) {
+                for (const building of this.buildings) {
+                    if (x >= building.x && x <= building.x + building.size &&
+                        y >= building.y && y <= building.y + building.size) {
+                        this.showBuildingInfo(building);
+                        return;
+                    }
+                }
+                document.getElementById('selectedInfo').style.display = 'none';
+            }
+            
+            showBuildingInfo(building) {
+                const type = this.buildingTypes[building.type];
+                document.getElementById('selectedInfo').style.display = 'block';
+                document.getElementById('selectedName').textContent = `${type.name} (${Math.floor(building.health)} HP)`;
+                document.getElementById('selectedCost').textContent = `Vị trí: ${building.x}, ${building.y}`;
+                document.getElementById('selectedDescription').textContent = 
+                    `Tiến độ: ${Math.floor(building.progress * 100)}%\nKích thước: ${building.size}px`;
+            }
+            
+            spawnEnemyWave() {
+                this.wave++;
+                document.getElementById('waveCount').textContent = this.wave;
+                
+                const enemyCount = 3 + this.wave;
+                for (let i = 0; i < enemyCount; i++) {
+                    const x = Math.random() > 0.5 ? -50 : this.canvas.width + 50;
+                    const y = Math.random() * this.canvas.height;
+                    
+                    this.enemies.push({
+                        x: x,
+                        y: y,
+                        health: 20 + this.wave * 5,
+                        maxHealth: 20 + this.wave * 5,
+                        speed: 1 + Math.random() * 0.5,
+                        targetX: this.canvas.width / 2,
+                        targetY: this.canvas.height / 2
+                    });
+                }
+                
+                this.addMessage(`Wave ${this.wave} bắt đầu! ${enemyCount} kẻ địch xuất hiện.`);
+            }
+            
+            update(deltaTime) {
+                if (this.paused) return;
+                
+                this.gameTime += deltaTime;
+                
+                // Update buildings
+                for (const building of this.buildings) {
+                    if (building.progress < 1) {
+                        building.progress += deltaTime * 0.1;
+                        if (building.progress > 1) building.progress = 1;
+                    }
+                    
+                    const type = this.buildingTypes[building.type];
+                    
+                    // Drills produce resources
+                    if (building.progress >= 1 && type.produces) {
+                        // Find nearby resource node
+                        for (const resource of this.resources) {
+                            const dist = Math.sqrt(
+                                Math.pow(resource.x - (building.x + building.size/2), 2) +
+                                Math.pow(resource.y - (building.y + building.size/2), 2)
+                            );
+                            
+                            if (dist < 100 && resource.amount > 0) {
+                                resource.amount -= deltaTime * type.rate;
+                                this.resourceCounts[type.produces] += deltaTime * type.rate;
+                                
+                                if (resource.amount <= 0) {
+                                    this.resources = this.resources.filter(r => r !== resource);
+                                }
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Turrets attack enemies
+                    if (building.progress >= 1 && type.range) {
+                        for (const enemy of this.enemies) {
+                            const dist = Math.sqrt(
+                                Math.pow(enemy.x - (building.x + building.size/2), 2) +
+                                Math.pow(enemy.y - (building.y + building.size/2), 2)
+                            );
+                            
+                            if (dist < type.range && this.gameTime % 0.5 < deltaTime) {
+                                this.projectiles.push({
+                                    x: building.x + building.size/2,
+                                    y: building.y + building.size/2,
+                                    target: enemy,
+                                    speed: 5,
+                                    damage: type.damage
+                                });
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                // Update enemies
+                for (let i = this.enemies.length - 1; i >= 0; i--) {
+                    const enemy = this.enemies[i];
+                    
+                    // Move towards target
+                    const dx = enemy.targetX - enemy.x;
+                    const dy = enemy.targetY - enemy.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist > 1) {
+                        enemy.x += (dx / dist) * enemy.speed;
+                        enemy.y += (dy / dist) * enemy.speed;
+                    }
+                    
+                    // Attack nearby buildings
+                    for (const building of this.buildings) {
+                        if (building.progress >= 1) {
+                            const bDist = Math.sqrt(
+                                Math.pow(enemy.x - (building.x + building.size/2), 2) +
+                                Math.pow(enemy.y - (building.y + building.size/2), 2)
+                            );
+                            
+                            if (bDist < 30 && this.gameTime % 1 < deltaTime) {
+                                building.health -= 5;
+                                if (building.health <= 0) {
+                                    this.buildings = this.buildings.filter(b => b !== building);
+                                    this.addMessage("Công trình bị phá hủy!");
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Remove dead enemies
+                    if (enemy.health <= 0) {
+                        this.enemies.splice(i, 1);
+                        // Drop resources
+                        this.resourceCounts.copper += 2;
+                        this.resourceCounts.lead += 1;
+                    }
+                }
+                
+                // Update projectiles
+                for (let i = this.projectiles.length - 1; i >= 0; i--) {
+                    const projectile = this.projectiles[i];
+                    
+                    if (!projectile.target || projectile.target.health <= 0) {
+                        this.projectiles.splice(i, 1);
+                        continue;
+                    }
+                    
+                    const dx = projectile.target.x - projectile.x;
+                    const dy = projectile.target.y - projectile.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < 5) {
+                        projectile.target.health -= projectile.damage;
+                        this.projectiles.splice(i, 1);
+                    } else {
+                        projectile.x += (dx / dist) * projectile.speed;
+                        projectile.y += (dy / dist) * projectile.speed;
+                    }
+                }
+                
+                // Update UI every second
+                if (Math.floor(this.gameTime) > Math.floor(this.gameTime - deltaTime)) {
+                    this.renderUI();
+                    document.getElementById('enemyCount').textContent = this.enemies.length;
+                }
+            }
+            
+            draw() {
+                // Clear canvas
+                this.ctx.fillStyle = '#0d1117';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw resource nodes
+                for (const resource of this.resources) {
+                    this.ctx.beginPath();
+                    this.ctx.fillStyle = this.resourceTypes[resource.type].color;
+                    this.ctx.arc(resource.x, resource.y, 20, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    // Draw resource amount
+                    this.ctx.fillStyle = '#fff';
+                    this.ctx.font = '12px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText(Math.floor(resource.amount), resource.x, resource.y + 35);
+                }
+                
+                // Draw buildings
+                for (const building of this.buildings) {
+                    const type = this.buildingTypes[building.type];
+                    
+                    // Draw building
+                    this.ctx.fillStyle = type.color;
+                    this.ctx.fillRect(building.x, building.y, building.size, building.size);
+                    
+                    // Draw border
+                    this.ctx.strokeStyle = building.progress >= 1 ? '#4CAF50' : '#FFA500';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.strokeRect(building.x, building.y, building.size, building.size);
+                    
+                    // Draw construction progress
+                    if (building.progress < 1) {
+                        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                        this.ctx.fillRect(
+                            building.x, 
+                            building.y + building.size * (1 - building.progress), 
+                            building.size, 
+                            building.size * building.progress
+                        );
+                        
+                        // Draw progress text
+                        this.ctx.fillStyle = '#fff';
+                        this.ctx.font = '14px Arial';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.fillText(
+                            `${Math.floor(building.progress * 100)}%`,
+                            building.x + building.size/2,
+                            building.y + building.size/2
+                        );
+                    }
+                    
+                    // Draw health bar
+                    if (building.health < 100) {
+                        const healthWidth = (building.health / 100) * building.size;
+                        this.ctx.fillStyle = building.health > 50 ? '#4CAF50' : 
+                                            building.health > 25 ? '#FFA500' : '#f44336';
+                        this.ctx.fillRect(building.x, building.y - 5, healthWidth, 3);
+                    }
+                }
+                
+                // Draw enemies
+                for (const enemy of this.enemies) {
+                    // Draw enemy body
+                    this.ctx.fillStyle = '#f44336';
+                    this.ctx.beginPath();
+                    this.ctx.arc(enemy.x, enemy.y, 15, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    // Draw enemy eye
+                    this.ctx.fillStyle = '#000';
+                    this.ctx.beginPath();
+                    this.ctx.arc(enemy.x - 5, enemy.y - 5, 3, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    
+                    // Draw health bar
+                    const healthWidth = (enemy.health / enemy.maxHealth) * 30;
+                    this.ctx.fillStyle = '#4CAF50';
+                    this.ctx.fillRect(enemy.x - 15, enemy.y - 25, healthWidth, 3);
+                }
+                
+                // Draw projectiles
+                for (const projectile of this.projectiles) {
+                    this.ctx.fillStyle = '#FFD700';
+                    this.ctx.beginPath();
+                    this.ctx.arc(projectile.x, projectile.y, 3, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+                
+                // Draw building preview
+                if (this.selectedBuilding && this.mouseX && this.mouseY) {
+                    const building = this.buildingTypes[this.selectedBuilding];
+                    const gridX = Math.floor(this.mouseX / this.gridSize) * this.gridSize;
+                    const gridY = Math.floor(this.mouseY / this.gridSize) * this.gridSize;
+                    const size = building.size * this.gridSize;
+                    
+                    this.ctx.fillStyle = building.color + '80';
+                    this.ctx.fillRect(gridX, gridY, size, size);
+                    this.ctx.strokeStyle = '#4CAF50';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.strokeRect(gridX, gridY, size, size);
+                }
+                
+                // Draw HUD
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                this.ctx.fillRect(10, 10, 200, 80);
+                
+                this.ctx.fillStyle = '#fff';
+                this.ctx.font = '14px Arial';
+                this.ctx.textAlign = 'left';
+                this.ctx.fillText(`Wave: ${this.wave}`, 20, 30);
+                this.ctx.fillText(`Enemies: ${this.enemies.length}`, 20, 50);
+                this.ctx.fillText(`Buildings: ${this.buildings.length}`, 20, 70);
+                this.ctx.fillText(`Paused: ${this.paused ? 'Yes' : 'No'}`, 20, 90);
+            }
+            
+            animate(timestamp) {
+                if (!this.lastTime) this.lastTime = timestamp;
+                const deltaTime = (timestamp - this.lastTime) / 1000;
+                this.lastTime = timestamp;
+                
+                this.update(deltaTime);
+                this.draw();
+                
+                requestAnimationFrame((ts) => this.animate(ts));
+            }
+            
+            addMessage(message) {
+                const log = document.getElementById('messageLog');
+                const entry = document.createElement('div');
+                entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                log.appendChild(entry);
+                log.scrollTop = log.scrollHeight;
+            }
+            
+            capitalize(str) {
+                return str.charAt(0).toUpperCase() + str.slice(1);
+            }
+        }
+        
+        // Start the game when page loads
+        window.addEventListener('load', () => {
+            const game = new MindustryClone();
+            window.game = game; // Make it accessible from console
+        });
+    </script>
 </body>
 </html>
